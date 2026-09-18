@@ -1,0 +1,24 @@
+---
+import { site } from '../data/site';
+import type { Dict, Lang } from '../i18n/types';
+
+interface Props { lang: Lang; d: Dict }
+const { lang, d } = Astro.props;
+---
+<section id="contact" class="mx-4 my-24 overflow-hidden rounded-3xl bg-gradient-to-br from-vermilion-deep to-vermilion-vivid md:mx-6" aria-labelledby="contact-title">
+  <div class="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
+    <h2 id="contact-title" class="kicker" data-reveal>{d.contact.kicker}</h2>
+    <p class="mt-6 max-w-4xl font-display text-5xl uppercase leading-[0.98] md:text-8xl" data-reveal>{d.contact.title}</p>
+    <p class="mt-6 max-w-xl text-lg text-bone" data-reveal>{d.contact.body}</p>
+    <div class="mt-10 flex flex-wrap gap-3" data-reveal>
+      <a class="btn-primary" href={`mailto:${site.email}`}>{d.contact.cta}</a>
+      <a class="btn-ghost" href={site.cv[lang]} download>{d.hero.cv}</a>
+    </div>
+    <ul class="mt-10 flex flex-wrap gap-x-8 gap-y-2 text-bone" data-reveal>
+      <li><a class="inline-flex min-h-11 items-center underline decoration-amber decoration-2 underline-offset-8" href={`mailto:${site.email}`}>{site.email}</a></li>
+      <li><a class="inline-flex min-h-11 items-center underline decoration-amber decoration-2 underline-offset-8" href={site.github} target="_blank" rel="noopener noreferrer">GitHub</a></li>
+      <li><a class="inline-flex min-h-11 items-center underline decoration-amber decoration-2 underline-offset-8" href={site.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+    </ul>
+    <p class="mt-6 text-sm text-bone/80">{d.contact.location}</p>
+  </div>
+</section>

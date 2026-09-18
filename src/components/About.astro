@@ -1,0 +1,35 @@
+---
+import type { Dict } from '../i18n/types';
+
+interface Props { d: Dict }
+const { d } = Astro.props;
+---
+<section id="about" class="mx-auto max-w-6xl px-4 py-24 md:px-6" aria-labelledby="about-title">
+  <h2 id="about-title" class="kicker" data-reveal>{d.about.kicker}</h2>
+  <p class="mt-6 max-w-3xl font-display text-3xl leading-tight md:text-5xl" data-reveal>{d.about.profile}</p>
+
+  <div class="mt-14 grid gap-12 md:grid-cols-[1.4fr_1fr]">
+    <div data-reveal>
+      <h3 class="font-display text-2xl uppercase">{d.about.stackTitle}</h3>
+      <ul class="mt-4 flex flex-wrap gap-2">
+        {d.about.stack.map((s) => <li class="rounded-full border border-bone/20 px-3 py-1 font-mono text-xs">{s}</li>)}
+      </ul>
+    </div>
+    <div class="space-y-10">
+      <div data-reveal>
+        <h3 class="font-display text-2xl uppercase">{d.about.eventsTitle}</h3>
+        <ul class="mt-4 space-y-4">
+          {d.about.events.map((e) => (
+            <li><p class="text-bone">{e.title}</p><p class="text-sm text-bone/72">{e.body}</p></li>
+          ))}
+        </ul>
+      </div>
+      <div data-reveal>
+        <h3 class="font-display text-2xl uppercase">{d.about.languagesTitle}</h3>
+        <ul class="mt-4 space-y-1 text-bone/80">
+          {d.about.languages.map((l) => <li>{l}</li>)}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

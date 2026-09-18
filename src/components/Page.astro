@@ -2,7 +2,13 @@
 import Base from '../layouts/Base.astro';
 import { dicts } from '../i18n';
 import type { Lang } from '../i18n/types';
+import About from './About.astro';
+import Contact from './Contact.astro';
+import Experience from './Experience.astro';
+import Footer from './Footer.astro';
 import Hero from './Hero.astro';
+import WhatIDo from './WhatIDo.astro';
+import Work from './Work.astro';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
@@ -12,5 +18,11 @@ const d = dicts[lang];
   <link slot="head" rel="preload" as="image" href="/media/poster.jpg" fetchpriority="high" />
   <main id="top">
     <Hero lang={lang} d={d} />
+    <WhatIDo d={d} />
+    <Work d={d} />
+    <Experience d={d} />
+    <About d={d} />
+    <Contact lang={lang} d={d} />
   </main>
+  <Footer d={d} />
 </Base>

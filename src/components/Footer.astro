@@ -1,0 +1,14 @@
+---
+import { site } from '../data/site';
+import type { Dict } from '../i18n/types';
+
+interface Props { d: Dict }
+const { d } = Astro.props;
+const year = new Date().getFullYear();
+---
+<footer class="border-t border-bone/15">
+  <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-bone/72 md:flex-row md:items-center md:justify-between md:px-6">
+    <p>© {year} {site.name}. {d.footer.rights}</p>
+    <p>{d.contact.location}</p>
+  </div>
+</footer>

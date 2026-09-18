@@ -1,0 +1,37 @@
+---
+import { site } from '../data/site';
+import type { Dict } from '../i18n/types';
+
+interface Props { d: Dict }
+const { d } = Astro.props;
+---
+<section id="work" class="mx-auto max-w-6xl px-4 py-24 md:px-6" aria-labelledby="work-title">
+  <h2 id="work-title" class="kicker" data-reveal>{d.work.kicker}</h2>
+  <div class="mt-8">
+    {d.work.featured.map((p) => (
+      <article id={`work-${p.id}`} class="grid gap-6 border-t border-bone/15 py-10 md:grid-cols-[6rem_1fr_1.2fr] md:gap-10" data-reveal>
+        <p class="font-mono text-sm text-amber">{p.year}</p>
+        <h3 class="font-display text-4xl uppercase leading-none md:text-5xl">{p.title}</h3>
+        <div>
+          <p class="text-bone/80">{p.summary}</p>
+          <ul class="mt-4 flex flex-wrap gap-2">
+            {p.tags.map((t) => <li class="rounded-full border border-bone/20 px-3 py-1 font-mono text-xs">{t}</li>)}
+          </ul>
+          <a href={site.projectLinks[p.id]} target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex min-h-11 items-center gap-2 text-bone underline decoration-amber decoration-2 underline-offset-8">
+            {d.work.viewCode} <span aria-hidden="true" class="text-amber">→</span>
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <h3 class="mt-16 font-display text-3xl uppercase" data-reveal>{d.work.moreTitle}</h3>
+  <div class="mt-6 grid gap-4 md:grid-cols-2">
+    {d.work.more.map((m) => (
+      <div class="rounded-2xl border border-bone/15 p-6" data-reveal>
+        <h4 class="font-display text-2xl uppercase">{m.title}</h4>
+        <p class="mt-2 text-bone/72">{m.body}</p>
+      </div>
+    ))}
+  </div>
+</section>
