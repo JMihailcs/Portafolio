@@ -74,7 +74,7 @@ export function initHeroReveal(media: HTMLElement, video: HTMLVideoElement): voi
   };
   const tick = (): void => {
     draw();
-    raf = state.k > 0.002 || inside ? requestAnimationFrame(tick) : 0;
+    raf = visible && (state.k > 0.002 || inside) ? requestAnimationFrame(tick) : 0;
   };
   const start = (): void => { if (!raf && visible) raf = requestAnimationFrame(tick); };
 
@@ -137,6 +137,13 @@ export function initHeroReveal(media: HTMLElement, video: HTMLVideoElement): voi
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     if (visible) start();
-    else { inside = false; state.k = 0; draw(); }
+    else {
+      gsap.killTweensOf(state);
+      peekTl?.kill();
+      peekTl = null;
+      inside = false;
+      state.k = 0;
+      draw();
+    }
   }).observe(media);
 }

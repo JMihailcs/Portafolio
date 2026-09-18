@@ -58,12 +58,23 @@ const { lang, d } = Astro.props;
   }
   .hero-sub { max-width: 34ch; font-size: clamp(1rem, 1.25vw, 1.2rem); color: rgb(243 233 228 / 0.72); }
   .hero-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-  @media (min-width: 768px) { .hero { margin: 1.5rem 1.5rem 0; min-height: max(640px, calc((100vw - 3rem) * 9 / 16)); } }
-  @media (max-width: 767px) {
-    .hero { min-height: max(calc(100svh - 2rem), 820px); background: #5a1409; }
-    .hero-media { inset: 0 0 auto 0; height: 58%; }
+  .hero-cta :global(.btn-ghost) { background: rgb(20 9 11 / 0.45); backdrop-filter: blur(2px); }
+  /* Side-by-side only where the bust clears the copy: the silhouette reaches ~42% of the
+     frame width, and below ~1280px the 640px min-height floor makes the container taller
+     than 16:9, so `cover` drags the bust left underneath .hero-copy. */
+  @media (min-width: 1280px) {
+    .hero { margin: 1.5rem 1.5rem 0; min-height: max(640px, calc((100vw - 3rem) * 9 / 16)); }
+  }
+  @media (max-width: 1279px) {
+    /* A definite length, not 58%: the old percentage resolved against a content-driven
+       hero, so taller copy grew the media band and pushed the chin onto the first h1 line. */
+    .hero {
+      min-height: max(calc(100svh - 2rem), 820px); background: #5a1409;
+      --hero-media-h: clamp(320px, 46vw, 520px);
+    }
+    .hero-media { inset: 0 0 auto 0; height: var(--hero-media-h); }
     .hero-media::after { content: ""; position: absolute; inset: auto 0 0 0; height: 45%; background: linear-gradient(to top, #5a1409, transparent); }
     .hero-video { object-position: 85% 50%; }
-    .hero-copy { max-width: none; justify-content: flex-end; }
+    .hero-copy { max-width: none; justify-content: flex-end; padding-top: calc(var(--hero-media-h) - 3rem); }
   }
 </style>
