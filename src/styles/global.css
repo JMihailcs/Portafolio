@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource-variable/dm-sans/index.css";
+@import "@fontsource/jetbrains-mono/400.css";
+
+@theme {
+  --color-vermilion: #e34234;
+  --color-vermilion-deep: #5a1409;
+  --color-vermilion-vivid: #d63a22;
+  --color-ink: #14090b;
+  --color-bone: #f3e9e4;
+  --color-amber: #ffb347;
+  --font-display: "Instrument Serif", "Times New Roman", serif;
+  --font-body: "DM Sans Variable", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { scroll-behavior: smooth; background: var(--color-ink); }
+body {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.05; }
+:focus-visible { outline: 2px solid var(--color-amber); outline-offset: 3px; }
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-amber);
+}
+
+.btn-primary, .btn-ghost {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  min-height: 44px; padding: 0.6rem 1.4rem; border-radius: 999px;
+  font-weight: 500; transition: transform .3s var(--ease-soft), background-color .3s var(--ease-soft);
+}
+.btn-primary { background: var(--color-bone); color: var(--color-ink); }
+.btn-primary:hover { transform: translateY(-2px); background: #fff; }
+.btn-ghost { color: var(--color-bone); border: 1px solid rgb(243 233 228 / 0.35); }
+.btn-ghost:hover { border-color: var(--color-amber); }
+
+.nav-link { position: relative; font-size: 0.95rem; color: rgb(243 233 228 / 0.85); }
+.nav-link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 1px;
+  background: var(--color-amber); transform: scaleX(0); transition: transform .3s var(--ease-soft);
+}
+.nav-link:hover::after, .nav-link:focus-visible::after { transform: scaleX(1); }
+
+/* Motion guards: hidden only when JS is running and motion is allowed; `show` is added by main.ts (or a 2.5s fallback). */
+@media (prefers-reduced-motion: no-preference) {
+  .js:not(.show) [data-in], .js:not(.show) [data-reveal] { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+.cursor-ring {
+  position: fixed; left: -14px; top: -14px; width: 28px; height: 28px; z-index: 50;
+  border: 1px solid rgb(243 233 228 / 0.7); border-radius: 999px; pointer-events: none;
+  opacity: 0; mix-blend-mode: difference; transition: width .25s, height .25s, margin .25s, opacity .25s;
+}
+.cursor-ring.is-active { width: 48px; height: 48px; margin: -10px 0 0 -10px; }
