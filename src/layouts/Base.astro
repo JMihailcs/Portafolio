@@ -1,0 +1,53 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+import type { Lang } from '../i18n/types';
+
+interface Props { lang: Lang; meta: { title: string; description: string; ogAlt: string } }
+const { lang, meta } = Astro.props;
+const other: Lang = lang === 'es' ? 'en' : 'es';
+// Absolute URLs only exist when SITE_URL is set at build time.
+const abs = (p: string) => (Astro.site ? new URL(p, Astro.site).href : undefined);
+const canonical = abs(`/${lang}/`);
+const ogImage = abs('/og.jpg');
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  jobTitle: 'Junior AI Engineer',
+  email: site.email,
+  sameAs: [site.github, site.linkedin],
+  address: { '@type': 'PostalAddress', addressLocality: 'Cusco', addressCountry: 'PE' },
+};
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{meta.title}</title>
+    <meta name="description" content={meta.description} />
+    <meta name="theme-color" content="#14090B" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {canonical && <link rel="alternate" hreflang={lang} href={canonical} />}
+    {abs(`/${other}/`) && <link rel="alternate" hreflang={other} href={abs(`/${other}/`)} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={meta.title} />
+    <meta property="og:description" content={meta.description} />
+    <meta property="og:locale" content={lang === 'es' ? 'es_PE' : 'en_US'} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:alt" content={meta.ogAlt} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      setTimeout(function () { document.documentElement.classList.add('show'); }, 2500);
+    </script>
+    <slot name="head" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <slot />
+    <div class="cursor-ring" data-cursor aria-hidden="true"></div>
+  </body>
+</html>

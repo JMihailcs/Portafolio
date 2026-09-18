@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import { dicts } from '../i18n';
+import type { Lang } from '../i18n/types';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const d = dicts[lang];
+---
+<Base lang={lang} meta={d.meta}>
+  <main id="top">
+    <h1 class="font-display text-5xl uppercase">{d.hero.headline.join(' — ')}</h1>
+  </main>
+</Base>
