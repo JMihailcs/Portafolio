@@ -26,11 +26,12 @@ Idiomas: **español e inglés**, con redacción natural en ambos (no traducción
 
 ## 3. Alcance
 
-**Incluye:** sitio estático bilingüe de una página (`/es`, `/en`), hero con video en loop,
-secciones Work, Experience, About/Trust y Contact, descarga de CV, SEO básico, accesibilidad.
+**Incluye:** sitio estático bilingüe de una página (`/es`, `/en`), hero con video ambiental y el
+**efecto de revelado al pasar el mouse por el rostro** (ver §7), secciones Work, Experience,
+About/Trust y Contact, descarga de CV, SEO básico, accesibilidad.
 
 **No incluye (v1):** blog, CMS, formulario de contacto con backend, testimonios, pricing, FAQ,
-interacción de listones de vidrio con el cursor (posible mejora futura), analítica.
+analítica.
 
 ## 4. Stack
 
@@ -93,11 +94,34 @@ Una página por idioma, secciones en este orden:
   GraphRAG, Semantic Search. Título serif blanco condensado abajo a la derecha de cada tarjeta.
   Cada una enlaza a su proyecto en Work.
 - **Contenido derecha:** video `hero-loop.mp4` a sangre, con `object-position` hacia el busto.
-- **Video:** `transition.mp4` (7 s, Seedance) → `hero-loop.mp4` concatenando el original con su
-  reverso vía ffmpeg (loop sin corte, sin depender de `playbackRate`). Atributos: `muted`,
-  `playsinline`, `autoplay`, `loop`, sin `controls`. `poster` = Image 1 (comprimida) y se
-  precarga como LCP.
-- **`prefers-reduced-motion`:** solo se muestra el poster, sin video ni animaciones de entrada.
+- **Video (solo ambiental):** `transition.mp4` (7 s, Seedance) → `hero-loop.mp4` concatenando el
+  original con su reverso vía ffmpeg (loop sin corte, sin depender de `playbackRate`). Solo mueve
+  la nebulosa del cabello/cuello, las partículas y la luz; **el rostro de mármol permanece intacto**
+  porque es la "piel" que el revelado abre. Atributos: `muted`, `playsinline`, `autoplay`, `loop`,
+  sin `controls`. `poster` = Image 1 (comprimida) y se precarga como LCP.
+- **Efecto de revelado (`HeroReveal`)** — al pasar el mouse sobre el rostro se ve lo que hay debajo
+  (comportamiento observado en la referencia). Capas, de abajo arriba:
+  1. Video/poster del busto.
+  2. **Capa interior (HTML, `aria-hidden`):** panel de terminal con fondo `--ink` y texto
+     monoespaciado en ámbar/bermellón/hueso que se desplaza lentamente hacia arriba. Contenido: la
+     traza de un agente (consulta → llamadas a herramientas → solicitud de confirmación → traza
+     enviada a Phoenix), coherente con Mikha. Es decorativa: sin métricas ni cifras que parezcan
+     mediciones reales.
+  3. **Ventana orgánica:** la capa 2 se recorta con un `clip-path: path()` en forma de mancha (12
+     puntos, spline cerrada con ondulación sinusoidal por punto) generado en cada frame; sobre su
+     contorno se dibuja un trazo dorado (`--amber`) con el mismo path en un SVG superpuesto.
+  4. **Listones de vidrio:** 6 tiras verticales sobre el rostro (`backdrop-filter: blur(1.5px)
+     brightness(1.08)` + bordes de 1 px en `--bone` al ~35%). Se desplazan en X con el cursor con
+     factores distintos por tira (GSAP `quickTo`).
+  - **Zona de revelado:** rectángulo (frente y ojos) definido como porcentajes en un único punto de
+    configuración, que se ajusta una vez con las imágenes reales. El centro de la mancha sigue al
+    puntero (lerp ≈ 0.12) confinado a esa zona; al entrar crece de 0 al tamaño de la zona
+    (~0.6 s) y al salir se cierra con el mismo easing.
+  - **Táctil (sin hover):** la ventana se abre con `pointerdown` y sigue el dedo sin bloquear el
+    scroll vertical (`touch-action: pan-y`); además hace un "vistazo" automático cada ~6 s mientras
+    el hero es visible.
+- **`prefers-reduced-motion`:** solo poster; sin video, ondulación ni vistazos automáticos; el
+  revelado responde al puntero con apertura inmediata y sin desplazamiento de texto ni de listones.
 - **Móvil:** el busto va arriba (recorte vertical vía `object-position`), el texto debajo sobre un
   degradado oscuro para contraste; las 3 tarjetas pasan a fila con scroll horizontal.
 - **Sin assets todavía:** el hero se monta con el degradado bermellón y un contenedor de
@@ -176,8 +200,8 @@ Portafolio/
 │   ├── i18n/{es.ts,en.ts,index.ts}   # todo el copy por idioma
 │   ├── data/{projects.ts,experience.ts}  # datos bilingües tipados
 │   ├── layouts/Base.astro    # <head>, SEO, hreflang, fuentes
-│   ├── components/{Nav,Hero,HeroCards,WhatIDo,Work,Experience,About,Contact,Footer}.astro
-│   ├── scripts/{reveal.ts,cursor.ts}   # GSAP: entrada del hero y reveals en scroll
+│   ├── components/{Nav,Hero,HeroReveal,HeroCards,WhatIDo,Work,Experience,About,Contact,Footer}.astro
+│   ├── scripts/{reveal.ts,cursor.ts,hero-reveal.ts}   # GSAP: entrada, scroll; hero-reveal: mancha, listones, táctil
 │   ├── styles/global.css     # tokens y base
 │   └── pages/{index.astro,es/index.astro,en/index.astro}
 └── docs/superpowers/{specs,plans}/
@@ -193,7 +217,9 @@ Portafolio/
   entre pasos.
 - Scroll (GSAP ScrollTrigger): fade-up sutil por sección y stagger en tarjetas de proyecto.
 - Cursor circular personalizado: solo con `(pointer: fine)` y sin reduced-motion.
-- Solo `transform` y `opacity`.
+- Solo `transform` y `opacity`, salvo el `clip-path` de la mancha del revelado, que se actualiza
+  con `requestAnimationFrame` únicamente mientras el puntero está sobre el hero.
+- El revelado se inicializa solo cuando el hero es visible (IntersectionObserver) y se detiene al salir.
 
 ## 11. Rendimiento, accesibilidad y SEO
 
@@ -211,7 +237,11 @@ Portafolio/
 - Contraste comprobado en pares texto/fondo reales.
 - Lighthouse (Performance, Accessibility, SEO) como referencia; sin objetivos numéricos rígidos
   salvo LCP < 2.5 s.
-- Prueba con `prefers-reduced-motion` activado y sin JavaScript (contenido legible).
+- Prueba con `prefers-reduced-motion` activado y sin JavaScript (contenido legible; el hero muestra
+  el poster con el rostro intacto).
+- Revelado: probar en el navegador que la mancha se abre al entrar en el rostro, sigue al puntero
+  confinada a la zona, se cierra al salir, que los listones reaccionan, y que en táctil se abre con
+  toque y hace el vistazo automático. Comprobar 60 fps aproximados en escritorio.
 
 ## 13. Entrega
 
@@ -220,6 +250,9 @@ Deploy estático (Vercel o Netlify, a elegir al final). Dominio propio fuera de 
 ## 14. Pendientes que no bloquean el diseño
 
 - Assets `hero/image-1.png`, `hero/image-2.png`, `hero/transition.mp4`, `cards/a|b|c.png`
-  (los genera el usuario con los prompts de FRAME).
+  (los genera el usuario con los prompts de FRAME). Cambio respecto a la primera versión de los
+  prompts: **sin listones de vidrio en las imágenes ni en el video** (ahora son DOM) y con el **rostro de mármol limpio**, sin nebulosa sobre ojos ni
+  frente. Cualquier imagen generada con los prompts anteriores debe regenerarse.
+- Alinear la capa interior con la zona de revelado una vez existan las imágenes reales.
 - Enlaces a los repos de Mikha y Semantic Search.
 - Fuente serif definitiva tras compararla con la referencia.
