@@ -13,12 +13,12 @@ const links = [
 ] as const;
 ---
 <header class="flex items-center justify-between px-5 pt-5 md:px-10 md:pt-8" data-in>
-  <a href="#top" class="font-display text-3xl leading-none text-bone" aria-label={d.nav.home}>JM</a>
-  <nav aria-label={d.nav.aria} class="hidden gap-8 md:flex">
+  <a href="#top" class="inline-flex min-h-11 items-center font-display text-3xl leading-none text-bone" aria-label={d.nav.home}>JM</a>
+  <nav aria-label={d.nav.aria} class="hidden items-center gap-8 rounded-full bg-ink/55 px-5 py-2 backdrop-blur-sm md:flex">
     {links.map(([id, label]) => <a class="nav-link" href={`#${id}`}>{label}</a>)}
   </nav>
   <div class="flex items-center gap-3">
-    <a class="nav-link inline-flex min-h-11 min-w-11 items-center justify-center font-mono text-sm" href={`/${other}/`} hreflang={other} lang={other} aria-label={d.nav.switchLabel}>{other.toUpperCase()}</a>
+    <a class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-ink/55 px-3 font-mono text-sm text-bone/90 backdrop-blur-sm hover:text-bone" href={`/${other}/`} hreflang={other} lang={other} aria-label={d.nav.switchLabel}>{other.toUpperCase()}</a>
     <details class="relative md:hidden">
       <summary class="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded-full border border-bone/35 px-4 text-sm">{d.nav.menu}</summary>
       <nav aria-label={d.nav.aria} class="absolute right-0 top-12 z-20 grid min-w-44 gap-1 rounded-2xl bg-ink/95 p-3 backdrop-blur">

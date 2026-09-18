@@ -6,6 +6,6 @@ export function initHeroVideo(video: HTMLVideoElement): void {
 
   const mobile = matchMedia('(max-width: 767px)').matches;
   video.src = (mobile ? video.dataset.srcMobile : video.dataset.srcDesktop) ?? '';
-  video.addEventListener('canplay', () => { void video.play().catch(() => {}); }, { once: true });
-  video.load();
+  // preload="none" fetches nothing until play(); muted + playsinline allows autoplay.
+  void video.play().catch(() => {});
 }
