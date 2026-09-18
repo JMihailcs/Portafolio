@@ -2,13 +2,15 @@
 import Base from '../layouts/Base.astro';
 import { dicts } from '../i18n';
 import type { Lang } from '../i18n/types';
+import Hero from './Hero.astro';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const d = dicts[lang];
 ---
 <Base lang={lang} meta={d.meta}>
+  <link slot="head" rel="preload" as="image" href="/media/poster.jpg" fetchpriority="high" />
   <main id="top">
-    <h1 class="font-display text-5xl uppercase">{d.hero.headline.join(' — ')}</h1>
+    <Hero lang={lang} d={d} />
   </main>
 </Base>

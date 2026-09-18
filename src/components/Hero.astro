@@ -1,0 +1,67 @@
+---
+import { site } from '../data/site';
+import type { Dict, Lang } from '../i18n/types';
+import HeroCards from './HeroCards.astro';
+import Nav from './Nav.astro';
+
+interface Props { lang: Lang; d: Dict }
+const { lang, d } = Astro.props;
+---
+<section class="hero" aria-labelledby="hero-title" data-hero>
+  <div class="hero-media" data-hero-media role="img" aria-label={d.hero.mediaAlt}>
+    <video
+      class="hero-video" poster="/media/poster.jpg" muted playsinline loop preload="none" aria-hidden="true"
+      data-hero-video data-src-desktop="/media/hero-loop.mp4" data-src-mobile="/media/hero-loop-720.mp4"
+    ></video>
+  </div>
+
+  <div class="hero-inner">
+    <Nav lang={lang} d={d} />
+    <div class="hero-copy">
+      <h1 id="hero-title" class="hero-title" data-in>
+        <span class="block">{d.hero.headline[0]}</span>
+        <span class="block">— {d.hero.headline[1]}</span>
+      </h1>
+      <p class="hero-sub" data-in>{d.hero.sub}</p>
+      <div class="hero-cta" data-in>
+        <a class="btn-primary" href={`mailto:${site.email}`}>{d.hero.ctaPrimary}</a>
+        <a class="btn-ghost" href="#work">{d.hero.ctaSecondary} <span aria-hidden="true" class="text-amber">→</span></a>
+        <a class="btn-ghost" href={site.cv[lang]} download>{d.hero.cv}</a>
+      </div>
+    </div>
+    <HeroCards d={d} />
+  </div>
+</section>
+
+<script>
+  import '../scripts/hero';
+</script>
+
+<style>
+  .hero {
+    position: relative; isolation: isolate; overflow: hidden; border-radius: 24px;
+    margin: 1rem 1rem 0; min-height: max(640px, calc((100vw - 2rem) * 9 / 16));
+    background: linear-gradient(115deg, #5a1409 0%, #7c1c10 38%, #d63a22 100%);
+  }
+  .hero-media { position: absolute; inset: 0; z-index: 0; }
+  .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 100% 50%; background: transparent; }
+  /* The inner layer never blocks the pointer; only interactive children opt back in. */
+  .hero-inner { position: relative; z-index: 2; display: flex; flex-direction: column; min-height: inherit; height: 100%; padding-bottom: clamp(1.25rem, 3vw, 2.5rem); pointer-events: none; }
+  .hero-inner :global(:is(a, summary, details, ul)) { pointer-events: auto; }
+  .hero-copy { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; max-width: 46%; padding: 2rem clamp(1.25rem, 5vw, 4.5rem); }
+  .hero-inner > :global(ul) { margin-left: clamp(1.25rem, 5vw, 4.5rem); }
+  .hero-title {
+    font-size: clamp(2.5rem, 5.2vw, 5.6rem); line-height: 0.95; letter-spacing: -0.01em;
+    text-transform: uppercase; color: var(--color-bone);
+  }
+  .hero-sub { max-width: 34ch; font-size: clamp(1rem, 1.25vw, 1.2rem); color: rgb(243 233 228 / 0.72); }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; pointer-events: auto; }
+  @media (min-width: 768px) { .hero { margin: 1.5rem 1.5rem 0; min-height: max(640px, calc((100vw - 3rem) * 9 / 16)); } }
+  @media (max-width: 767px) {
+    .hero { min-height: max(calc(100svh - 2rem), 820px); background: #5a1409; }
+    .hero-media { inset: 0 0 auto 0; height: 58%; }
+    .hero-media::after { content: ""; position: absolute; inset: auto 0 0 0; height: 45%; background: linear-gradient(to top, #5a1409, transparent); }
+    .hero-video { object-position: 85% 50%; }
+    .hero-copy { max-width: none; justify-content: flex-end; }
+  }
+</style>
