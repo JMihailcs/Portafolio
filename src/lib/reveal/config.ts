@@ -3,9 +3,9 @@ import type { Rect } from './geometry';
 /** Every rectangle is a fraction of the 16:9 source frame (measured on assets/hero/image-1.png, 1672×941). */
 export const MEDIA_ASPECT = 16 / 9;
 /** Region the window's centre may travel in: eyes and brow. */
-export const CENTER_ZONE: Rect = { x: 0.7, y: 0.285, w: 0.07, h: 0.06 };
+export const CENTER_ZONE: Rect = { x: 0.705, y: 0.29, w: 0.05, h: 0.05 };
 /** Max blob radii as fractions of the frame WIDTH (both axes), so the shape keeps its proportions. */
-export const RADIUS = { rx: 0.075, ry: 0.04 };
+export const RADIUS = { rx: 0.062, ry: 0.036 };
 /** Pointer hit area: the face. */
 export const HIT_AREA: Rect = { x: 0.62, y: 0.12, w: 0.21, h: 0.46 };
 /** Area covered by the glass slats. */

@@ -2,6 +2,7 @@
 import { site } from '../data/site';
 import type { Dict, Lang } from '../i18n/types';
 import HeroCards from './HeroCards.astro';
+import HeroReveal from './HeroReveal.astro';
 import Nav from './Nav.astro';
 
 interface Props { lang: Lang; d: Dict }
@@ -13,6 +14,7 @@ const { lang, d } = Astro.props;
       class="hero-video" poster="/media/poster.jpg" muted playsinline loop preload="none" aria-hidden="true"
       data-hero-video data-src-desktop="/media/hero-loop.mp4" data-src-mobile="/media/hero-loop-720.mp4"
     ></video>
+    <HeroReveal />
   </div>
 
   <div class="hero-inner">
