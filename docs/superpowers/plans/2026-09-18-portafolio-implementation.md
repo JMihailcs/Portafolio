@@ -764,7 +764,12 @@ git commit -m "feat: media pipeline (ping-pong loop, poster, OG image) and CV fi
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { clamp, clampToRect, coverBox, lerp, mapRect } from '../src/lib/reveal/geometry';
+import { clamp, clampToRect, coverBox, lerp, mapRect, type Rect } from '../src/lib/reveal/geometry';
+
+// Float math (and -0) make exact toEqual brittle; compare rectangles numerically.
+const near = (a: Rect, b: Rect): void => {
+  for (const k of ['x', 'y', 'w', 'h'] as const) expect(a[k]).toBeCloseTo(b[k], 6);
+};
 
 describe('geometry', () => {
   it('lerp interpolates', () => {
@@ -782,16 +787,16 @@ describe('geometry', () => {
     expect(clampToRect({ x: 15, y: 12 }, r)).toEqual({ x: 15, y: 12 });
   });
   it('coverBox of a container with the media aspect fills it exactly', () => {
-    expect(coverBox(1600, 900, 16 / 9, 0.5, 0.5)).toEqual({ x: 0, y: 0, w: 1600, h: 900 });
+    near(coverBox(1600, 900, 16 / 9, 0.5, 0.5), { x: 0, y: 0, w: 1600, h: 900 });
   });
   it('coverBox crops horizontally in a narrow container and honours object-position', () => {
     // 500x500 container, 2:1 media: scale by height -> 1000x500 drawn, right-aligned (posX=1)
-    expect(coverBox(500, 500, 2, 1, 0.5)).toEqual({ x: -500, y: 0, w: 1000, h: 500 });
-    expect(coverBox(500, 500, 2, 0, 0.5)).toEqual({ x: 0, y: 0, w: 1000, h: 500 });
+    near(coverBox(500, 500, 2, 1, 0.5), { x: -500, y: 0, w: 1000, h: 500 });
+    near(coverBox(500, 500, 2, 0, 0.5), { x: 0, y: 0, w: 1000, h: 500 });
   });
   it('mapRect converts frame fractions into container pixels', () => {
     const box = { x: -500, y: 0, w: 1000, h: 500 };
-    expect(mapRect({ x: 0.5, y: 0.5, w: 0.1, h: 0.1 }, box)).toEqual({ x: 0, y: 250, w: 100, h: 50 });
+    near(mapRect({ x: 0.5, y: 0.5, w: 0.1, h: 0.1 }, box), { x: 0, y: 250, w: 100, h: 50 });
   });
 });
 ```
