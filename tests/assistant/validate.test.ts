@@ -43,8 +43,8 @@ describe('validate', () => {
   it('enforces the per-role character limits at their exact boundaries', () => {
     expect(validate(body([u('x'.repeat(500))]))).not.toBeNull();
     expect(validate(body([u('x'.repeat(501))]))).toBeNull();
-    expect(validate(body([a('x'.repeat(2000)), u('q')]))).not.toBeNull();
-    expect(validate(body([a('x'.repeat(2001)), u('q')]))).toBeNull();
+    expect(validate(body([u('q'), a('x'.repeat(2000)), u('q2')]))).not.toBeNull();
+    expect(validate(body([u('q'), a('x'.repeat(2001)), u('q2')]))).toBeNull();
   });
   it('rejects a body over 16 KB before parsing', () => {
     const huge = JSON.stringify({ lang: 'es', messages: [u('x'.repeat(20_000))] });
@@ -70,6 +70,67 @@ describe('validate', () => {
   it('validates only the 10 kept turns (a malformed dropped turn is ignored)', () => {
     const turns = [{ role: 'bogus', content: 'x' }, ...Array.from({ length: 10 }, (_, i) => (i === 9 ? u('last') : u(`q${i}`)))];
     expect(validate(body(turns))).not.toBeNull();
+  });
+  it('accepts an over-limit leading assistant turn if it gets dropped during truncation', () => {
+    // A leading assistant message that exceeds the char limit but gets dropped by the while loop
+    // should not cause validation to fail (char limits checked after dropping leading assistant)
+    const turns = [a('x'.repeat(2001)), u('q0'), a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4'), u('q5')];
+    // This has 12 messages; truncate to last 10: [u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4'), u('q5')]... wait that's only 9
+    // Let me recalculate: turns has 12 messages total. Last 10 would be messages [2..11]
+    // which is [u('q0'), a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4')]
+    // Wait, that's only 10. Let me count again:
+    // 0: a('x'.repeat(2001)) - over limit leading assistant
+    // 1: u('q0')
+    // 2: a('a0')
+    // 3: u('q1')
+    // 4: a('a1')
+    // 5: u('q2')
+    // 6: a('a2')
+    // 7: u('q3')
+    // 8: a('a3')
+    // 9: u('q4')
+    // 10: a('a4')
+    // 11: u('q5')
+    // Total: 12. Last 10: [1..10] = [u('q0'), a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4')]
+    // This ends with a, not u. So it should be rejected for that reason, not the char limit.
+    // Let me add one more user message:
+    const turns2 = [a('x'.repeat(2001)), u('q0'), a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4'), u('q5')];
+    // Now we have 12 messages. Last 10: [2..11] = [a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4'), u('q5')]
+    // This starts with a, so it will be shifted. Then: [u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4'), u('q5')]
+    // But that's only 9 messages and ends with u. Hmm, this doesn't work either.
+    // Let me try with 13 messages:
+    const turns3 = [a('x'.repeat(2001)), u('q0'), a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4'), u('q5'), a('a5')];
+    // 13 messages. Last 10: [3..12] = [u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4'), u('q5'), a('a5')]
+    // Ends with a, not u. Fails for that reason.
+    //
+    // I think the issue is that I need the first message (after truncation) to be assistant, so it gets dropped,
+    // but also need to end with user. Let me try:
+    const turns4 = [a('x'.repeat(2001)), a('x'), u('q0'), a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4'), u('q5')];
+    // 13 messages. Last 10: [3..12] = [u('q0'), a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4'), a('a4')]
+    // Ends with a, not u. Still fails.
+    //
+    // Wait, I think I'm overcomplicating this. Let me just make sure the first message after truncation is an over-limit assistant,
+    // and the last message is a user. That's all I need.
+    // If I have: [a(oversized), a(normal), u, a, u, a, u, a, u, a, u, a, u]
+    // That's 13 messages. Last 10 would be: [a, u, a, u, a, u, a, u, a, u]
+    // That starts with a and ends with u. The while loop shifts the first a, leaving [u, a, u, a, u, a, u, a, u]
+    // But that's only 9 messages.
+    //
+    // OK I think the issue is I need exactly 11 messages so that last 10 starts with a and ends with u.
+    // [a(oversized), u, a, u, a, u, a, u, a, u, a]
+    // Last 10: [u, a, u, a, u, a, u, a, u, a]
+    // That ends with a, not u. Still doesn't work.
+    //
+    // Maybe I should have: [a(oversized), u, a, u, a, u, a, u, a, u]
+    // Last 10: all of them
+    // Ends with u, starts with a.
+    // While loop shifts first a.
+    // Result: [u, a, u, a, u, a, u, a, u]
+    // That's 9 messages and ends with u. Perfect!
+    const finalTurns = [a('x'.repeat(2001)), u('q0'), a('a0'), u('q1'), a('a1'), u('q2'), a('a2'), u('q3'), a('a3'), u('q4')];
+    const r = validate(body(finalTurns));
+    expect(r).not.toBeNull();
+    expect(r?.messages.length).toBe(9);
   });
 });
 

@@ -25,14 +25,13 @@ export function validate(raw: string): ValidRequest | null {
   const kept = messages.slice(-LIMITS.turns);
   if (!kept.every(isTurn)) return null;
   if (kept.at(-1)!.role !== 'user') return null;
-  // Check character limits before removing leading assistant messages
+  // Truncation can orphan the opening user turn; the API needs the first message to be `user`.
+  while (kept.length > 1 && kept[0].role === 'assistant') kept.shift();
+  if (kept[0].role === 'assistant') return null; // all-assistant (impossible if last is user, kept as a guard)
   for (const m of kept) {
     const max = m.role === 'user' ? LIMITS.userChars : LIMITS.assistantChars;
     if (m.content.length > max) return null;
   }
-  // Truncation can orphan the opening user turn; the API needs the first message to be `user`.
-  while (kept.length > 1 && kept[0].role === 'assistant') kept.shift();
-  if (kept[0].role === 'assistant') return null; // all-assistant (impossible if last is user, kept as a guard)
   return { lang, messages: kept };
 }
 
