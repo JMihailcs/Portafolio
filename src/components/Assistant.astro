@@ -63,6 +63,11 @@ const a = d.assistant;
     <p class="assistant-privacy">{a.privacy}</p>
   </div>
 
+  <div class="assistant-teaser" data-assistant-teaser aria-hidden="true" hidden>
+    <button type="button" class="assistant-teaser-close" data-assistant-teaser-close tabindex="-1" aria-hidden="true">×</button>
+    <p>{a.teaser}</p>
+  </div>
+
   <button
     type="button"
     class="assistant-fab"
@@ -80,14 +85,20 @@ const a = d.assistant;
 <style>
   /* Spec §8: bottom-right, z-index 40 (mobile menu 20, cursor ring 50), tokens only. */
   .assistant {
-    position: fixed; right: 1rem; bottom: 1rem; z-index: 40;
+    position: fixed; right: 1.75rem; bottom: 1rem; z-index: 40;
     display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem;
   }
   .assistant-fab {
+    position: relative;
     width: 56px; height: 56px; border-radius: 999px;
     display: grid; place-items: center;
     background: var(--color-vermilion); color: var(--color-ink);
     border: 1px solid rgb(243 233 228 / 0.25);
+  }
+  /* Soft radar-ping pulse to draw the eye; stopped while the panel is open. */
+  .assistant-fab::before {
+    content: ''; position: absolute; inset: 0; border-radius: 999px;
+    border: 2px solid var(--color-vermilion); pointer-events: none; opacity: 0;
   }
   .assistant-panel {
     display: flex; flex-direction: column; gap: 0.75rem;
@@ -146,11 +157,42 @@ const a = d.assistant;
   }
   .assistant-privacy { margin: 0; color: rgb(243 233 228 / 0.72); font-size: 0.75rem; line-height: 1.4; }
 
+  /* One-time teaser bubble: points at the fab, dismissible, purely decorative for AT. */
+  .assistant-teaser {
+    position: absolute; right: 0; bottom: 72px;
+    max-width: 220px;
+    background: var(--color-bone); color: var(--color-ink);
+    border-radius: 0.85rem; padding: 0.65rem 1.75rem 0.65rem 0.85rem;
+    font-size: 0.85rem; line-height: 1.4;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+  }
+  .assistant-teaser[hidden] { display: none; }
+  .assistant-teaser p { margin: 0; }
+  .assistant-teaser::after {
+    content: ''; position: absolute; right: 1.5rem; bottom: -0.4rem;
+    width: 0.8rem; height: 0.8rem; background: var(--color-bone);
+    transform: rotate(45deg);
+  }
+  .assistant-teaser-close {
+    position: absolute; top: 0.3rem; right: 0.3rem;
+    width: 22px; height: 22px; display: grid; place-items: center;
+    color: var(--color-ink); opacity: 0.6; font-size: 1rem; line-height: 1;
+  }
+  .assistant-teaser-close:hover { opacity: 1; }
+
   /* Spec §8: transitions exist only when motion is welcome. */
   @media (prefers-reduced-motion: no-preference) {
     .assistant-panel { transition: opacity 0.25s var(--ease-soft), transform 0.25s var(--ease-soft); }
     .assistant-fab { transition: transform 0.3s var(--ease-soft); }
     .assistant-fab:hover { transform: translateY(-2px); }
+    .assistant-fab::before { animation: assistant-pulse 2.4s var(--ease-soft) infinite; }
+    .assistant.is-open .assistant-fab::before { animation: none; opacity: 0; }
+    .assistant-teaser { transition: opacity 0.25s var(--ease-soft), transform 0.25s var(--ease-soft); }
+  }
+
+  @keyframes assistant-pulse {
+    0% { transform: scale(1); opacity: 0.55; }
+    100% { transform: scale(1.55); opacity: 0; }
   }
 
   /* Mobile: full-screen sheet; the header close button replaces the floating button. */

@@ -85,5 +85,6 @@ export const en: Dict = {
     error: 'I could not answer right now.',
     limited: 'You have reached the message limit for now.',
     off: 'The assistant is turned off right now.',
+    teaser: "Hi! I'm Clera, Johan's assistant. Ask me anything about him and his experience 🙂",
   },
 };

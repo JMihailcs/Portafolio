@@ -188,6 +188,45 @@ test('reduced motion: no panel transition', async ({ browser }) => {
   await ctx.close();
 });
 
+test('reduced motion: no pulse animation on the fab', async ({ browser }) => {
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await page.goto('/es/');
+  const duration = await page.locator('[data-assistant-toggle]').evaluate(
+    (el) => getComputedStyle(el, '::before').animationDuration,
+  );
+  expect(duration).toBe('0s');
+  await ctx.close();
+});
+
+test('teaser bubble appears once, is dismissible with its own close control', async ({ page }) => {
+  await page.goto('/es/');
+  const teaser = page.locator('[data-assistant-teaser]');
+  await expect(teaser).toBeHidden();
+  await expect(teaser).toBeVisible({ timeout: 6000 });
+  await expect(teaser).toContainText('Clera');
+  await page.locator('[data-assistant-teaser-close]').click();
+  await expect(teaser).toBeHidden();
+  await expect(page.locator('[data-assistant-panel]')).toBeHidden();
+});
+
+test('clicking the teaser opens the panel and dismisses the bubble', async ({ page }) => {
+  await page.goto('/es/');
+  const teaser = page.locator('[data-assistant-teaser]');
+  await expect(teaser).toBeVisible({ timeout: 6000 });
+  await teaser.click();
+  await expect(page.locator('[data-assistant-panel]')).toBeVisible();
+  await expect(teaser).toBeHidden();
+});
+
+test('teaser never appears if the panel was opened before the timer fires', async ({ page }) => {
+  await page.goto('/es/');
+  await page.locator('[data-assistant-toggle]').click();
+  await expect(page.locator('[data-assistant-panel]')).toBeVisible();
+  await page.waitForTimeout(5000);
+  await expect(page.locator('[data-assistant-teaser]')).toBeHidden();
+});
+
 test('hero reveal still works with the widget present', async ({ page }) => {
   await page.goto('/es/');
   const hit = page.locator('[data-hit]');
