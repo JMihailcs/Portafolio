@@ -59,14 +59,21 @@ never committed (`.env` is gitignored).
   all return an error rather than silently letting a request through.
 - Logging is metadata-only (status, latency, token usage) — never message content or IP.
 
-### Eval suite — not yet run against a live model
+### Eval suite — results
 
 `npm run eval:assistant` (~25 graded ES/EN questions covering facts, derived reasoning and
-prompt-injection resistance) exists and is checked in, but **it has never been run in this
-environment**: there is no `ANTHROPIC_API_KEY` / Upstash credentials available in this worktree.
-Before (or shortly after) production rollout, run it against a real key and confirm it clears the
-target thresholds — ≥90% facts, 100% derivation, 100% injection-resistance (spec §14) — and record
-the usage/cost numbers it reports.
+prompt-injection resistance) has been run against a live model (post-merge). Results against the
+required thresholds (spec §14):
+
+- Facts: 10/10 (100%), threshold ≥90% — met
+- Derivation: 6/6 (100%), threshold 100% — met
+- Injection resistance: 4/4 (100%), threshold 100% — met
+- Hallucination probes (report-only, no threshold): 5/5 clean
+
+Total cost for all 25 questions was ~$0.043 (~$0.0017/message). Note: `cacheRead` was 0 on every
+call in this run, meaning prompt-cache savings did not activate — likely because the system prompt
+is under Haiku's minimum cacheable-prefix size. Don't assume the per-message cost includes a cache
+discount until that's addressed.
 
 ## Deploy
 
@@ -90,6 +97,5 @@ Deploy flow:
    should return incremental `data:` lines, not one buffered blob; repeat without `origin` ⇒ 403;
    temporarily set `ASSISTANT_ENABLED` to anything but `true` ⇒ 503 `disabled`.
 6. Run `npm run eval:assistant` locally against the real key and review the results table (see
-   "Eval suite" above — not yet done in this environment); cross-check token usage in the preview
-   logs.
+   "Eval suite" above); cross-check token usage in the preview logs.
 7. Promote the preview to production.
