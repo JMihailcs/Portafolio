@@ -32,9 +32,10 @@ test('opens with focus in the input, traps Tab, Escape closes and restores focus
 });
 
 test('streams a mocked answer and sends the last turns', async ({ page }) => {
-  let sent: { lang: string; messages: { role: string }[] } | null = null;
+  type SentBody = { lang: string; messages: { role: string }[] };
+  const state: { sent: SentBody | null } = { sent: null };
   await page.route('**/api/chat', async (route) => {
-    sent = JSON.parse(route.request().postData() ?? 'null');
+    state.sent = JSON.parse(route.request().postData() ?? 'null') as SentBody | null;
     await route.fulfill({
       status: 200,
       headers: { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' },
@@ -48,13 +49,13 @@ test('streams a mocked answer and sends the last turns', async ({ page }) => {
   await expect(msgs).toHaveCount(2);
   await expect(msgs.nth(1)).toHaveText('Hola, soy el asistente.');
   await expect(page.locator('[data-assistant-pending]')).toBeHidden();
-  expect(sent?.lang).toBe('es');
-  expect(sent?.messages.at(-1)?.role).toBe('user');
+  expect(state.sent?.lang).toBe('es');
+  expect(state.sent?.messages.at(-1)?.role).toBe('user');
   // history grows: a second send includes the assistant turn
   await page.locator('[data-assistant-input]').fill('¿De dónde es?');
   await page.locator('[data-assistant-form]').evaluate((f) => (f as HTMLFormElement).requestSubmit());
   await expect(msgs).toHaveCount(4);
-  expect((sent as unknown as { messages: { role: string }[] }).messages.map((m) => m.role)).toContain('assistant');
+  expect(state.sent?.messages.map((m) => m.role)).toContain('assistant');
 });
 
 test('429 shows the rate-limit state with the email', async ({ page }) => {

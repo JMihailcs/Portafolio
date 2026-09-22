@@ -4,6 +4,8 @@ import {
 } from '../../src/lib/assistant/handler';
 import type { LimitStore } from '../../src/lib/assistant/limits';
 
+type ModelArgs = Parameters<HandlerDeps['model']>[0];
+
 const URL_ = 'https://portafolio.test/api/chat';
 const NOW = Date.UTC(2026, 8, 21, 12, 0, 0);
 
@@ -93,18 +95,18 @@ describe('handleChat — happy path and stream', () => {
     );
   });
   it('passes the built system prompt and validated messages to the model', async () => {
-    const model = vi.fn(() => chunks('ok'));
+    const model = vi.fn((_args: ModelArgs) => chunks('ok'));
     await handleChat(post(valid), deps({ model }));
     expect(model).toHaveBeenCalledTimes(1);
-    const args = model.mock.calls[0][0];
+    const args = model.mock.calls[0]![0];
     expect(args.system).toContain('Reglas del asistente');
     expect(args.messages).toEqual([{ role: 'user', content: '¿Quién es Johan?' }]);
   });
   it('merges consecutive user turns before calling the model', async () => {
-    const model = vi.fn(() => chunks('ok'));
+    const model = vi.fn((_args: ModelArgs) => chunks('ok'));
     const body = { lang: 'es', messages: [{ role: 'user', content: 'hola' }, { role: 'user', content: 'de nuevo' }] };
     await handleChat(post(body), deps({ model }));
-    expect((model.mock.calls[0][0]).messages).toEqual([{ role: 'user', content: 'hola\n\nde nuevo' }]);
+    expect(model.mock.calls[0]![0].messages).toEqual([{ role: 'user', content: 'hola\n\nde nuevo' }]);
   });
   it('emits error unavailable when the model fails mid-stream (after some deltas)', async () => {
     const model = () => (async function* () { yield 'parcial'; throw new Error('socket reset'); })();
@@ -128,7 +130,7 @@ describe('handleChat — happy path and stream', () => {
     expect(dump).not.toContain('SECRETO-SALARIO-999');
     expect(dump).not.toContain('1.2.3.4');
     expect(log).toHaveBeenCalled();
-    expect(log.mock.calls.at(-1)[0]).toHaveProperty('status', 200);
-    expect(log.mock.calls.at(-1)[0]).toHaveProperty('ms');
+    expect(log.mock.calls.at(-1)![0]).toHaveProperty('status', 200);
+    expect(log.mock.calls.at(-1)![0]).toHaveProperty('ms');
   });
 });
