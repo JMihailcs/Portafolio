@@ -62,15 +62,12 @@ export function initAssistant(): void {
   const teaserClose = q<HTMLButtonElement>('[data-assistant-teaser-close]');
   if (teaser && teaserClose) {
     let opened = false;
-    let dismissTimer: ReturnType<typeof setTimeout> | undefined;
     const hideTeaser = (): void => {
       teaser.hidden = true;
-      if (dismissTimer) clearTimeout(dismissTimer);
     };
     setTimeout(() => {
       if (opened) return;
       teaser.hidden = false;
-      dismissTimer = setTimeout(hideTeaser, 9000);
     }, 4000);
     teaser.addEventListener('click', () => {
       hideTeaser();
