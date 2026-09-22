@@ -73,4 +73,17 @@ export const es: Dict = {
     cta: 'Hablemos', location: 'Cusco, Perú (remoto)',
   },
   footer: { rights: 'Todos los derechos reservados.' },
+  assistant: {
+    label: 'Abrir el asistente del portafolio',
+    title: 'Pregúntale sobre Johan',
+    placeholder: 'Escribe tu pregunta…',
+    send: 'Enviar mensaje',
+    close: 'Cerrar el chat',
+    suggestions: ['¿Qué proyectos ha construido?', '¿Cuál es su stack principal?', '¿Qué experiencia tiene?'],
+    privacy: 'Las conversaciones las procesa Claude (Anthropic). No compartas datos personales.',
+    streaming: 'Escribiendo…',
+    error: 'No pude responder ahora mismo.',
+    limited: 'Alcanzaste el límite de mensajes por ahora.',
+    off: 'El asistente está apagado en este momento.',
+  },
 };

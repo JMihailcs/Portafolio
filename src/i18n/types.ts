@@ -21,4 +21,17 @@ export interface Dict {
   };
   contact: { kicker: string; title: string; body: string; cta: string; location: string };
   footer: { rights: string };
+  assistant: {
+    label: string;        // aria-label of the floating button
+    title: string;        // dialog heading / aria-label
+    placeholder: string;  // input placeholder + aria-label
+    send: string;         // aria-label of the send button
+    close: string;        // aria-label of the close button
+    suggestions: [string, string, string];
+    privacy: string;      // spec §7 notice
+    streaming: string;    // shown while the answer streams
+    error: string;        // generic failure (incl. refusal)
+    limited: string;      // 429 state
+    off: string;          // 503 disabled state
+  };
 }
