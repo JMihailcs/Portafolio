@@ -10,15 +10,28 @@ export const prerender = false; // the only non-static route (spec §4)
 const MODEL = 'claude-haiku-4-5';
 const WINDOW = { messages: 8, per: '10 m' } as const; // spec §6: 8 msgs / 10 min per IP
 
+/**
+ * Resolves Upstash REST credentials from the env vars Vercel's Upstash-via-Marketplace
+ * integration injects (KV_REST_API_URL / KV_REST_API_TOKEN). Not KV_REST_API_READ_ONLY_TOKEN
+ * (read-only, can't INCR) and not REDIS_URL/KV_URL (raw redis:// strings, not REST).
+ */
+export function resolveUpstashCredentials(
+  env: Record<string, string | undefined>,
+): { url: string; token: string } | null {
+  const url = env.KV_REST_API_URL;
+  const token = env.KV_REST_API_TOKEN;
+  if (!url || !token) return null;
+  return { url, token };
+}
+
 /** Fail closed: a missing store config yields a store that always throws (spec §4). */
 function makeStore(): LimitStore {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
+  const credentials = resolveUpstashCredentials(process.env);
+  if (!credentials) {
     const absent = (): Promise<never> => Promise.reject(new Error('upstash not configured'));
     return { window: absent, incr: absent };
   }
-  const redis = new Redis({ url, token });
+  const redis = new Redis(credentials);
   const ratelimit = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(WINDOW.messages, WINDOW.per), prefix: 'assistant:window' });
   return {
     async window(ip) {
