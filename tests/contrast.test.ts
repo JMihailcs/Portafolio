@@ -13,6 +13,8 @@ describe('design token contrast (WCAG AA 4.5:1 for normal text)', () => {
     ['amber on ink (kickers, arrows)', T.amber, T.ink],
     ['amber on vermilion-deep', T.amber, T.deep],
     ['bone 72% on ink', blend(T.bone, T.ink, 0.72), T.ink],
+    ['bone on assistant bubble bg (bone 14% over ink)', T.bone, blend(T.bone, T.ink, 0.14)],
+    ['bone on user bubble bg (vermilion-deep)', T.bone, T.deep],
   ];
   for (const [name, fg, bg] of pairs) {
     it(name, () => expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5));

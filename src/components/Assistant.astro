@@ -108,13 +108,43 @@ const a = d.assistant;
   }
   .assistant-close:hover { color: var(--color-amber); }
 
-  .assistant-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
-  .assistant-msg {
-    max-width: 85%; padding: 0.5rem 0.75rem; border-radius: 1rem;
-    font-size: 0.95rem; line-height: 1.45; white-space: pre-wrap; word-break: break-word;
+  .assistant-messages {
+    flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;
+    scrollbar-width: thin; scrollbar-color: var(--color-vermilion) rgb(243 233 228 / 0.08);
   }
-  .assistant-msg[data-role='user'] { align-self: flex-end; background: var(--color-vermilion-deep); color: var(--color-bone); }
-  .assistant-msg[data-role='assistant'] { align-self: flex-start; background: rgb(243 233 228 / 0.08); color: var(--color-bone); }
+  .assistant-messages::-webkit-scrollbar { width: 8px; }
+  .assistant-messages::-webkit-scrollbar-track { background: rgb(243 233 228 / 0.08); border-radius: 999px; }
+  .assistant-messages::-webkit-scrollbar-thumb { background: var(--color-vermilion); border-radius: 999px; }
+  .assistant-messages::-webkit-scrollbar-thumb:hover { background: var(--color-amber); }
+
+  /* :global — bubbles are appended client-side (assistant.ts) and never carry
+     Astro's scoped data-astro-cid attribute, so these rules must not be scoped either. */
+  :global(.assistant-msg) {
+    max-width: 85%; padding: 0.5rem 0.75rem; border-radius: 1rem;
+    font-size: 0.95rem; line-height: 1.45; word-break: break-word;
+  }
+  :global(.assistant-msg[data-role='user']) {
+    align-self: flex-end; background: var(--color-vermilion-deep); color: var(--color-bone);
+    white-space: pre-wrap;
+  }
+  :global(.assistant-msg[data-role='assistant']) {
+    align-self: flex-start; background: rgb(243 233 228 / 0.14); color: var(--color-bone);
+    border: 1px solid rgb(243 233 228 / 0.14);
+  }
+  :global(.assistant-msg p) { margin: 0; }
+  :global(.assistant-msg p + p) { margin-top: 0.5rem; }
+  :global(.assistant-msg ul), :global(.assistant-msg ol) { margin: 0.35rem 0; padding-left: 1.25rem; }
+  :global(.assistant-msg li + li) { margin-top: 0.15rem; }
+  :global(.assistant-msg pre) {
+    margin: 0.35rem 0; padding: 0.5rem; border-radius: 0.5rem;
+    background: rgb(0 0 0 / 0.25); overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+  }
+  :global(.assistant-msg code) { font-family: var(--font-mono); font-size: 0.85em; }
+  :global(.assistant-msg pre code) { font-family: var(--font-mono); }
+  :global(.assistant-msg blockquote) {
+    margin: 0.35rem 0; padding-left: 0.6rem; border-left: 2px solid rgb(243 233 228 / 0.35);
+  }
+  :global(.assistant-msg a) { color: var(--color-amber); text-decoration: underline; }
 
   .assistant-pending { color: rgb(243 233 228 / 0.72); font-size: 0.9rem; }
   .assistant-alert {
