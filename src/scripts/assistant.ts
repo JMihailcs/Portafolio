@@ -1,10 +1,12 @@
 /**
  * Widget client (spec §8): modal with focus trap, history capped to 10 turns,
- * assistant turns truncated to 2000 chars before resend, plain-text rendering
- * (textContent only), states for streaming / error / limited / disabled.
+ * assistant turns truncated to 2000 chars before resend; user bubbles render as
+ * plain text (textContent only), assistant bubbles render sanitized markdown
+ * (review decision, see render-markdown.ts); states for streaming / error / limited / disabled.
  */
 import type { ChatMessage } from '../lib/assistant/validate';
 import { LIMITS } from '../lib/assistant/validate';
+import { renderAssistantMarkdown } from '../lib/assistant/render-markdown';
 
 const TURNS = LIMITS.turns;
 const ASSISTANT_CHARS = LIMITS.assistantChars;
@@ -65,12 +67,15 @@ export function initAssistant(): void {
     else if (!e.shiftKey && (active === last || !panel.contains(active))) { e.preventDefault(); first.focus(); }
   });
 
-  // --- rendering (plain text only) ---------------------------------------
+  // --- rendering ------------------------------------------------------------
+  // User bubbles: textContent only (a visitor's own literal input is never
+  // interpreted as markdown). Assistant bubbles: sanitized markdown -> HTML.
   const addBubble = (role: 'user' | 'assistant', text: string): HTMLElement => {
     const el = document.createElement('div');
     el.className = 'assistant-msg';
     el.dataset.role = role;
-    el.textContent = text; // never innerHTML (spec: no markdown, no HTML)
+    if (role === 'assistant') el.innerHTML = renderAssistantMarkdown(text);
+    else el.textContent = text;
     messages.appendChild(el);
     messages.scrollTop = messages.scrollHeight;
     return el;
@@ -109,6 +114,7 @@ export function initAssistant(): void {
     if (busy || !text) return;
     busy = true;
     hideAlert();
+    suggestions.hidden = true; // first send of the session: free up vertical space for the conversation
     addBubble('user', text);
     history.push({ role: 'user', content: text });
     input.value = '';
@@ -133,6 +139,7 @@ export function initAssistant(): void {
       const decoder = new TextDecoder();
       let buf = '';
       let bubble: HTMLElement | null = null;
+      let raw = '';
 
       for (;;) {
         const { done, value } = await reader.read();
@@ -150,13 +157,14 @@ export function initAssistant(): void {
           if (evt.type === 'delta') {
             pending.hidden = true;
             bubble ??= addBubble('assistant', '');
-            bubble.textContent += evt.text;
+            raw += evt.text;
+            bubble.innerHTML = renderAssistantMarkdown(raw);
             messages.scrollTop = messages.scrollHeight;
           } else if (evt.type === 'done') {
-            if (bubble) history.push({ role: 'assistant', content: bubble.textContent ?? '' });
+            if (bubble) history.push({ role: 'assistant', content: raw });
           } else {
             // unavailable | refusal (spec §6): generic error + email, drop a fragment
-            if (bubble && !bubble.textContent) bubble.remove();
+            if (bubble && !raw) bubble.remove();
             showAlert('error');
           }
         }

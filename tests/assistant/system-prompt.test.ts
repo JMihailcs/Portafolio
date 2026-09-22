@@ -14,10 +14,9 @@ describe('system prompt', () => {
   });
   it('contains the behaviour rules', () => {
     expect(es).toContain('Reglas del asistente');
-    expect(es).toContain('texto plano');   // plain text, no markdown (review decision)
-    expect(es).toContain('sin markdown');
+    expect(es).toContain('markdown básico');   // client renders markdown (review decision)
     expect(en).toContain('Assistant rules');
-    expect(en).toContain('plain text');
+    expect(en).toContain('basic markdown');
   });
   it('localises the rules per language', () => {
     expect(es).not.toBe(en);
