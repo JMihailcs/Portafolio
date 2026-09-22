@@ -45,7 +45,7 @@ never committed (`.env` is gitignored).
 | Var | Purpose |
 |---|---|
 | `ANTHROPIC_API_KEY` | Calls the model (Claude Haiku). Missing/empty ⇒ `503 unavailable`. |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Redis-backed rate limiting. Missing ⇒ the limiter fails closed (`503 unavailable`), never open. |
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` (renamed from `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN`) | Redis-backed rate limiting, via the names Vercel's Upstash-via-Marketplace integration injects. Missing ⇒ the limiter fails closed (`503 unavailable`), never open. |
 | `ASSISTANT_ENABLED` | Must be exactly `true` to serve the assistant; anything else (including absent) ⇒ `503 disabled` and the widget shows its off-state copy with an email fallback. |
 | `DAILY_MESSAGE_CAP` | Optional global daily message cap (default 200). |
 
@@ -89,8 +89,9 @@ then rebuild once more without `SITE_URL` before deploying.
 Deploy flow:
 1. Provision Upstash Redis (free plan) from the Vercel Marketplace — this injects its env vars.
 2. Create an Anthropic API key scoped to this project with a spend cap set in the console.
-3. In Vercel, set `ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`,
-   `ASSISTANT_ENABLED=true`, and optionally `DAILY_MESSAGE_CAP`.
+3. In Vercel, set `ANTHROPIC_API_KEY` (the Marketplace integration already injects
+   `KV_REST_API_URL`/`KV_REST_API_TOKEN`), `ASSISTANT_ENABLED=true`, and optionally
+   `DAILY_MESSAGE_CAP`.
 4. Push the branch and open a preview deployment (connect the repo to Vercel if not already done).
 5. On the preview, confirm streaming works end-to-end:
    `curl -N -X POST https://<preview>/api/chat -H 'content-type: application/json' -H 'origin: https://<preview>' -d '{"lang":"es","messages":[{"role":"user","content":"¿Quién es Johan?"}]}'`
