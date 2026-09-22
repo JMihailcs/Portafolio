@@ -190,7 +190,7 @@ const a = d.assistant;
   /* One-time teaser bubble: points at the fab, dismissible, purely decorative for AT. */
   .assistant-teaser {
     position: absolute; right: 0; bottom: 72px;
-    max-width: 220px;
+    width: min(320px, calc(100vw - 2rem));
     background: var(--color-bone); color: var(--color-ink);
     border-radius: 0.85rem; padding: 0.65rem 1.75rem 0.65rem 0.85rem;
     font-size: 0.85rem; line-height: 1.4;
