@@ -85,5 +85,6 @@ export const es: Dict = {
     error: 'No pude responder ahora mismo.',
     limited: 'Alcanzaste el límite de mensajes por ahora.',
     off: 'El asistente está apagado en este momento.',
+    teaser: '¡Hola! Soy Clera, la asistente de Johan. Puedes preguntarme sobre él y su experiencia 🙂',
   },
 };

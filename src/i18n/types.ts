@@ -33,5 +33,6 @@ export interface Dict {
     error: string;        // generic failure (incl. refusal)
     limited: string;      // 429 state
     off: string;          // 503 disabled state
+    teaser: string;       // one-time teaser bubble copy, introduces "Clera" by name
   };
 }

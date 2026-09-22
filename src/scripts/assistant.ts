@@ -55,6 +55,38 @@ export function initAssistant(): void {
   toggle.addEventListener('click', () => (panel.hidden ? open() : close()));
   closeBtn.addEventListener('click', close);
 
+  // --- one-time teaser bubble ---------------------------------------------
+  // Shown once per page load, a few seconds in, unless the panel was already
+  // opened by then; purely decorative (aria-hidden), never steals focus.
+  const teaser = q<HTMLElement>('[data-assistant-teaser]');
+  const teaserClose = q<HTMLButtonElement>('[data-assistant-teaser-close]');
+  if (teaser && teaserClose) {
+    let opened = false;
+    let dismissTimer: ReturnType<typeof setTimeout> | undefined;
+    const hideTeaser = (): void => {
+      teaser.hidden = true;
+      if (dismissTimer) clearTimeout(dismissTimer);
+    };
+    setTimeout(() => {
+      if (opened) return;
+      teaser.hidden = false;
+      dismissTimer = setTimeout(hideTeaser, 9000);
+    }, 4000);
+    teaser.addEventListener('click', () => {
+      hideTeaser();
+      opened = true;
+      open();
+    });
+    teaserClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideTeaser();
+    });
+    toggle.addEventListener('click', () => {
+      opened = true;
+      hideTeaser();
+    });
+  }
+
   panel.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { close(); return; }
     if (e.key !== 'Tab') return;
