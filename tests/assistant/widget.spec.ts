@@ -58,6 +58,73 @@ test('streams a mocked answer and sends the last turns', async ({ page }) => {
   expect(state.sent?.messages.map((m) => m.role)).toContain('assistant');
 });
 
+test('renders assistant markdown (bold, list, safe link) as real elements', async ({ page }) => {
+  const sse =
+    'data: {"type":"delta","text":"**bold** text and a list:\\n\\n- one\\n- two\\n\\nand a [link](https://example.com)."}\n\n' +
+    'data: {"type":"done"}\n\n';
+  await page.route('**/api/chat', (route) =>
+    route.fulfill({ status: 200, headers: { 'content-type': 'text/event-stream' }, body: sse }),
+  );
+  await openWidget(page);
+  await page.locator('[data-assistant-input]').fill('hola');
+  await page.locator('[data-assistant-form]').evaluate((f) => (f as HTMLFormElement).requestSubmit());
+  const bubble = page.locator('[data-assistant-messages] .assistant-msg').nth(1);
+  await expect(bubble.locator('strong')).toHaveText('bold');
+  await expect(bubble.locator('li')).toHaveCount(2);
+  const link = bubble.locator('a');
+  await expect(link).toHaveAttribute('href', 'https://example.com');
+});
+
+test('sanitizes an assistant reply that tries to inject a script/onerror payload', async ({ page }) => {
+  const evil = '<img src=x onerror=alert(1)>hi <script>window.__xss = true;</script> [link](javascript:alert(1))';
+  const sse = `data: ${JSON.stringify({ type: 'delta', text: evil })}\n\ndata: {"type":"done"}\n\n`;
+  await page.route('**/api/chat', (route) =>
+    route.fulfill({ status: 200, headers: { 'content-type': 'text/event-stream' }, body: sse }),
+  );
+  await openWidget(page);
+  await page.locator('[data-assistant-input]').fill('hola');
+  await page.locator('[data-assistant-form]').evaluate((f) => (f as HTMLFormElement).requestSubmit());
+  const bubble = page.locator('[data-assistant-messages] .assistant-msg').nth(1);
+  await expect(bubble).toContainText('hi');
+  const hasXss = await page.evaluate(() => (window as unknown as { __xss?: boolean }).__xss ?? false);
+  expect(hasXss).toBe(false);
+  const html = await bubble.innerHTML();
+  expect(html).not.toContain('<script');
+  expect(html).not.toContain('onerror');
+  expect(html).not.toContain('javascript:');
+  await expect(bubble.locator('img')).toHaveCount(0);
+});
+
+test('suggestion chips hide after the first message is sent', async ({ page }) => {
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'text/event-stream' },
+      body: SSE_OK,
+    });
+  });
+  await openWidget(page);
+  await expect(page.locator('[data-assistant-suggestions]')).toBeVisible();
+  await page.locator('[data-assistant-input]').fill('hola');
+  await page.locator('[data-assistant-form]').evaluate((f) => (f as HTMLFormElement).requestSubmit());
+  await expect(page.locator('[data-assistant-suggestions]')).toBeHidden();
+});
+
+test('clicking a suggestion chip sends it and hides the row', async ({ page }) => {
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'text/event-stream' },
+      body: SSE_OK,
+    });
+  });
+  await openWidget(page);
+  await page.locator('[data-assistant-suggestion]').first().click();
+  const msgs = page.locator('[data-assistant-messages] .assistant-msg');
+  await expect(msgs).toHaveCount(2);
+  await expect(page.locator('[data-assistant-suggestions]')).toBeHidden();
+});
+
 test('429 shows the rate-limit state with the email', async ({ page }) => {
   await page.route('**/api/chat', (route) =>
     route.fulfill({ status: 429, headers: { 'content-type': 'application/json', 'retry-after': '30' }, body: '{"error":"rate_limited"}' }),
