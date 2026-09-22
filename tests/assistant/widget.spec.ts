@@ -75,7 +75,7 @@ test('renders assistant markdown (bold, list, safe link) as real elements', asyn
   await expect(link).toHaveAttribute('href', 'https://example.com');
 });
 
-test('user and assistant bubbles have distinct backgrounds and alignment (Astro scoped-style regression)', async ({ page }) => {
+test('user bubble keeps its background/alignment; assistant reply has no box and sits flush with the panel (Astro scoped-style regression)', async ({ page }) => {
   const sse = 'data: {"type":"delta","text":"reply"}\n\ndata: {"type":"done"}\n\n';
   await page.route('**/api/chat', (route) =>
     route.fulfill({ status: 200, headers: { 'content-type': 'text/event-stream' }, body: sse }),
@@ -87,16 +87,19 @@ test('user and assistant bubbles have distinct backgrounds and alignment (Astro 
   await expect(msgs).toHaveCount(2);
   // Bubbles are created client-side (assistant.ts): Astro's scoped CSS only applies
   // to elements carrying its data-astro-cid attribute, which document.createElement
-  // never sets — a rule scoped that way silently never matches. Guard both colour
-  // and alignment so a re-scoped rule fails loudly instead of washing bubbles out.
-  const [userBg, userAlign, assistantBg, assistantAlign] = await Promise.all([
+  // never sets — a rule scoped that way silently never matches. Guard colour and
+  // alignment so a re-scoped rule fails loudly instead of silently never applying.
+  const panel = page.locator('[data-assistant-panel]');
+  const [userBg, userAlign, assistantBg, assistantAlign, panelBg] = await Promise.all([
     msgs.nth(0).evaluate((el) => getComputedStyle(el).backgroundColor),
     msgs.nth(0).evaluate((el) => getComputedStyle(el).alignSelf),
     msgs.nth(1).evaluate((el) => getComputedStyle(el).backgroundColor),
     msgs.nth(1).evaluate((el) => getComputedStyle(el).alignSelf),
+    panel.evaluate((el) => getComputedStyle(el).backgroundColor),
   ]);
   expect(userBg).not.toBe('rgba(0, 0, 0, 0)');
-  expect(assistantBg).not.toBe('rgba(0, 0, 0, 0)');
+  // Assistant replies no longer get their own bubble box — they blend into the panel.
+  expect(assistantBg === 'rgba(0, 0, 0, 0)' || assistantBg === panelBg).toBe(true);
   expect(userBg).not.toBe(assistantBg);
   expect(userAlign).toBe('flex-end');
   expect(assistantAlign).toBe('flex-start');
