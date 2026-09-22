@@ -73,4 +73,17 @@ export const en: Dict = {
     cta: "Let's talk", location: 'Cusco, Peru (remote)',
   },
   footer: { rights: 'All rights reserved.' },
+  assistant: {
+    label: 'Open the portfolio assistant',
+    title: 'Ask about Johan',
+    placeholder: 'Type your question…',
+    send: 'Send message',
+    close: 'Close the chat',
+    suggestions: ['What projects has he built?', 'What is his main stack?', 'What is his experience?'],
+    privacy: 'Conversations are processed by Claude (Anthropic). Do not share personal data.',
+    streaming: 'Typing…',
+    error: 'I could not answer right now.',
+    limited: 'You have reached the message limit for now.',
+    off: 'The assistant is turned off right now.',
+  },
 };
