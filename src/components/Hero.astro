@@ -65,6 +65,13 @@ const { lang, d } = Astro.props;
   @media (min-width: 1280px) {
     .hero { margin: 1.5rem 1.5rem 0; min-height: max(640px, calc((100vw - 3rem) * 9 / 16)); }
   }
+  /* Past ~2000px the 16:9 frame grows taller than the viewport (pushing the cards below the
+     fold) and the copy looks tiny; cap the frame and centre it instead of stretching it. */
+  @media (min-width: 2048px) {
+    .hero { max-width: 2000px; min-height: 1125px; margin-inline: auto; }
+    .hero-title { font-size: 5.6rem; }
+    .hero-sub { font-size: 1.2rem; }
+  }
   @media (max-width: 1279px) {
     /* A definite length, not 58%: the old percentage resolved against a content-driven
        hero, so taller copy grew the media band and pushed the chin onto the first h1 line. */
