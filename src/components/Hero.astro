@@ -63,12 +63,14 @@ const { lang, d } = Astro.props;
      frame width, and below ~1280px the 640px min-height floor makes the container taller
      than 16:9, so `cover` drags the bust left underneath .hero-copy. */
   @media (min-width: 1280px) {
-    .hero { margin: 1.5rem 1.5rem 0; min-height: max(640px, calc((100vw - 3rem) * 9 / 16)); }
+    .hero { margin: 1.5rem 1.5rem 0; min-height: max(640px, min(calc((100vw - 3rem) * 9 / 16), calc(100svh - 3rem))); }
   }
+  /* Desktop min-height is also capped by the window height (100svh minus margins) so the
+     cards stay in the first view on short/wide screens; the video just crops via `cover`. */
   /* Past ~2000px the 16:9 frame grows taller than the viewport (pushing the cards below the
      fold) and the copy looks tiny; cap the frame and centre it instead of stretching it. */
   @media (min-width: 2048px) {
-    .hero { max-width: 2000px; min-height: 1125px; margin-inline: auto; }
+    .hero { max-width: 2000px; min-height: max(640px, min(1125px, calc(100svh - 3rem))); margin-inline: auto; }
     .hero-title { font-size: 5.6rem; }
     .hero-sub { font-size: 1.2rem; }
   }
